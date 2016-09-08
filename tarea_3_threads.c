@@ -72,24 +72,26 @@ int main(int argc, const char * argv[]) {
     //Reservando espacio para los hilos
     thread_content * ad = (thread_content *) malloc(sizeof(thread_content)*hilos);
     ad->inicio=0;
-    ad->fin = (N*mil)/hilos;
+    ad->fin = ((N*mil)/hilos)-1;
     alloc_memory_end = clock();
     threads_creation_begin = clock();
     
     pthread_t * threads = (pthread_t *) malloc(sizeof(pthread_t)*hilos);
     
-    for (int k = 1; k < hilos ; k++) {
-        if(k==hilos-1){
+    for (int k = 1; k < hilos-1 ; k++) {
+        if(k == hilos-1){
             (ad + k)->inicio = (ad + (k-1))->fin + 1;
-            (ad + k)->fin = ((N*mil)/hilos + (ad + k)->inicio)-k;
+            (ad + k)->fin = (((N*mil)/hilos - 1) + (ad + k)->inicio)-k;
+            printf("[%d]El thread %d computa de %d a %d\n",k,(ad+k)->id,(ad+k)->inicio,(ad+k)->fin);
         }
         else{
             (ad + k)->inicio = (ad + (k-1))->fin + 1;
-            (ad + k)->fin = (N*mil)/hilos + (ad + k)->inicio;
+            (ad + k)->fin = ((N*mil)/hilos -1) + (ad + k)->inicio;
+            printf("[%d]El thread %d computa de %d a %d\n",k, (ad+k)->id,(ad+k)->inicio,(ad+k)->fin);
         }
     }
     for (int i = 0; i < hilos ; i++) {
-        (ad+i)->id=i;
+        (ad+i)->id = i;
         pthread_create(threads, NULL, multiplyMatrix, (thread_content *)(ad+i));
     }
     threads_creation_end = clock();
