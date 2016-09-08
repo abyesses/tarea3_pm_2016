@@ -12,10 +12,10 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <semaphore.h>
+#include <ctype.h>
 #define N 2
 #define hilos 100
 #define mil 1000
-
 
 //Se generan arreglos
 typedef struct {
@@ -26,6 +26,7 @@ typedef struct {
 int ** matrix_a, ** matrix_b,** matrix_c;
 sem_t matriz;
 sem_t matriz_mul;
+int num;
 void * multiplyMatrix(void *);
 void * fillMatrix(void *);
 void * fillMatrix(void * hilo){
@@ -61,20 +62,46 @@ int main(int argc, const char * argv[]) {
     sem_init(&matriz, 1, 2);
     sem_init(&matriz_mul, 1, 2);
     alloc_memory_begin = clock();
+    int cc,index;
+    while ((cc = getopt (argc, argv, "n:")) != -1)
+        switch (cc)
+    {
+        case 'n':
+            num = atoi(optarg);
+            break;
+        case '?':
+            if ( optopt == 'n')
+                fprintf (stderr, "Opción -%c requiere un argumento.\n", optopt);
+            else if (isprint (optopt))
+                fprintf (stderr, "Opción desconocida '-%c'.\n", optopt);
+            else
+                fprintf (stderr,
+                         "Opción desconocida '\\x%x'.\n",
+                         optopt);
+            return 1;
+        default:
+            abort ();
+    }
+    
+    
+    for (index = optind; index < argc; index++)
+        printf ("El argumento no es una opción válida %s\n", argv[index]);
+    
+
     //Alloc memory for arrays
-    matrix_a = (int **)malloc(N*mil * sizeof(int *));
-    matrix_b = (int **)malloc(N*mil * sizeof(int *));
-    matrix_c = (int **)malloc(N*mil * sizeof(int *));
+    matrix_a = (int **)malloc(num * sizeof(int *));
+    matrix_b = (int **)malloc(num * sizeof(int *));
+    matrix_c = (int **)malloc(num * sizeof(int *));
     
     for (int i = 0 ; i < N * mil; i++) {
-        matrix_a[i] = (int *) malloc(N*mil * sizeof(int));
-        matrix_b[i] = (int *) malloc(N*mil * sizeof(int));
-        matrix_c[i] = (int *) malloc(N*mil * sizeof(int));
+        matrix_a[i] = (int *) malloc(num * sizeof(int));
+        matrix_b[i] = (int *) malloc(num * sizeof(int));
+        matrix_c[i] = (int *) malloc(num * sizeof(int));
     }
     //Reservando espacio para los hilos
     thread_content * ad = (thread_content *) malloc(sizeof(thread_content)*hilos);
     ad->inicio=0;
-    ad->fin = ((N*mil)/hilos)-1;
+    ad->fin = ((num)/hilos)-1;
     alloc_memory_end = clock();
     threads_creation_begin = clock();
     
@@ -83,12 +110,12 @@ int main(int argc, const char * argv[]) {
     for (int k = 1; k < hilos ; k++) {
         if(k == hilos-1){
             (ad + k)->inicio = (ad + (k-1))->fin + 1;
-            (ad + k)->fin = (((N*mil)/hilos) - 1 + (ad + k)->inicio);
+            (ad + k)->fin = (((num)/hilos) - 1 + (ad + k)->inicio);
             printf("[%d]El thread %d computa de %d a %d\n",k,(ad+k)->id,(ad+k)->inicio,(ad+k)->fin);
         }
         else{
             (ad + k)->inicio = (ad + (k-1))->fin + 1;
-            (ad + k)->fin = ((N*mil)/hilos -1) + (ad + k)->inicio;
+            (ad + k)->fin = ((num)/hilos -1) + (ad + k)->inicio;
             printf("[%d]El thread %d computa de %d a %d\n",k, (ad+k)->id,(ad+k)->inicio,(ad+k)->fin);
         }
     }
@@ -102,7 +129,7 @@ int main(int argc, const char * argv[]) {
     }
     
     free_memory_begin=clock();
-    for (int i = 0; i < N*mil ; i++) {
+    for (int i = 0; i < num ; i++) {
         free(matrix_a[i]);
         free(matrix_b[i]);
         free(matrix_c[i]);
