@@ -26,6 +26,8 @@ typedef struct {
 int ** matrix_a, ** matrix_b,** matrix_c;
 sem_t matriz;
 sem_t matriz_mul;
+void * multiplyMatrix(void *);
+void * fillMatrix(void *);
 void * fillMatrix(void * hilo){
     srand(time(NULL));
     int r;
@@ -56,8 +58,8 @@ void * multiplyMatrix(void * hilo){
 int main(int argc, const char * argv[]) {
     clock_t alloc_memory_begin,alloc_memory_end,threads_creation_begin,threads_creation_end,free_memory_begin,free_memory_end;
     double total,free_memory,allocation,threads_creation;
-    sem_init(&matriz, 0, 1);
-    sem_init(&matriz_mul, 0, 1);
+    sem_init(&matriz, 1, 2);
+    sem_init(&matriz_mul, 1, 2);
     alloc_memory_begin = clock();
     //Alloc memory for arrays
     matrix_a = (int **)malloc(N*mil * sizeof(int *));
@@ -92,11 +94,11 @@ int main(int argc, const char * argv[]) {
     }
     for (int i = 0; i < hilos ; i++) {
         (ad+i)->id = i;
-        pthread_create(threads, NULL, multiplyMatrix, (thread_content *)(ad+i));
+        pthread_create(&threads[i], NULL, multiplyMatrix, (thread_content *)(ad+i));
     }
     threads_creation_end = clock();
     for (int j = 0; j < hilos; j++) {
-        pthread_join(*(threads+j), NULL);
+        pthread_join(threads[j], NULL);
     }
     
     free_memory_begin=clock();
