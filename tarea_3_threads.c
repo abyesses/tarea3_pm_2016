@@ -78,10 +78,10 @@ int main(int argc, const char * argv[]) {
     
     pthread_t * threads = (pthread_t *) malloc(sizeof(pthread_t)*hilos);
     
-    for (int k = 1; k < hilos-1 ; k++) {
+    for (int k = 1; k < hilos ; k++) {
         if(k == hilos-1){
             (ad + k)->inicio = (ad + (k-1))->fin + 1;
-            (ad + k)->fin = (((N*mil)/hilos - 1) + (ad + k)->inicio)-k;
+            (ad + k)->fin = (((N*mil)/hilos) - 1 + (ad + k)->inicio);
             printf("[%d]El thread %d computa de %d a %d\n",k,(ad+k)->id,(ad+k)->inicio,(ad+k)->fin);
         }
         else{
